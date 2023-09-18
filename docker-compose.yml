@@ -1,0 +1,105 @@
+version: '3'
+
+services:
+  auth-page-microfronted:
+    build:
+      context: auth-page/.
+      dockerfile: Dockerfile
+    ports:
+      - "4300:4200"
+    networks:
+      - app_net
+
+  dashboard-page-microfronted:
+    build:
+      context: dashboard-page/.
+      dockerfile: Dockerfile
+    ports:
+      - "4300:4201"
+    networks:
+      - app_net
+
+  landing-page-microfronted:
+    build:
+      context: landing-page/.
+      dockerfile: Dockerfile
+    ports:
+      - "4300:4202"
+    networks:
+      - app_net
+
+  user-microservice:
+    build:
+      context: user-service/.
+      dockerfile: Dockerfile
+    ports:
+      - "9000:5000"
+    networks:
+      - app_net
+      - user_net
+    depends_on:
+      - user_database
+  
+  parameter-microservice:
+    build:
+      context: parameters-service/.
+      dockerfile: Dockerfile
+    ports:
+      - "9000:5000"
+    networks:
+      - app_net
+      - parameter_net
+    depends_on:
+      - parameter_database
+
+  ontology-microservice:
+    build:
+      context: ontology-service/.
+      dockerfile: Dockerfile
+    ports:
+      - "9000:5000"
+    networks:
+      - app_net
+      - ontology_net
+    depends_on:
+      - parameter_database
+
+  parameter_database:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: USER_DB
+      POSTGRES_USER: USER_USER_DB
+      POSTGRES_PASSWORD: USER_PASSWORD_ULTA_SECRETO
+    networks:
+      - user_net
+
+  ontology_database:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: USER_DB
+      POSTGRES_USER: USER_USER_DB
+      POSTGRES_PASSWORD: USER_PASSWORD_ULTA_SECRETO
+    networks:
+      - user_net
+
+  user_database:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: USER_DB
+      POSTGRES_USER: USER_USER_DB
+      POSTGRES_PASSWORD: USER_PASSWORD_ULTA_SECRETO
+    networks:
+      - user_net
+
+networks:
+  app_net:
+    driver: bridge
+
+  user_net:
+    driver: bridge
+
+  ontology_net:
+    driver: bridge
+
+  parameter_net:
+    driver: bridge
