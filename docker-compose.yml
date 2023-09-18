@@ -6,7 +6,7 @@ services:
       context: auth-page/.
       dockerfile: Dockerfile
     ports:
-      - "8105:4200"
+      - "8106:4200"
     networks:
       - app_net
 
@@ -15,7 +15,7 @@ services:
       context: dashboard-page/.
       dockerfile: Dockerfile
     ports:
-      - "8106:4200"
+      - "8107:4200"
     networks:
       - app_net
 
@@ -24,7 +24,7 @@ services:
       context: landing-page/.
       dockerfile: Dockerfile
     ports:
-      - "8107:4200"
+      - "8105:4200"
     networks:
       - app_net
 
