@@ -6,7 +6,7 @@ services:
       context: auth-page/.
       dockerfile: Dockerfile
     ports:
-      - "4300:4200"
+      - "8105:4200"
     networks:
       - app_net
 
@@ -15,7 +15,7 @@ services:
       context: dashboard-page/.
       dockerfile: Dockerfile
     ports:
-      - "4300:4201"
+      - "8106:4200"
     networks:
       - app_net
 
@@ -24,7 +24,7 @@ services:
       context: landing-page/.
       dockerfile: Dockerfile
     ports:
-      - "4300:4202"
+      - "8107:4200"
     networks:
       - app_net
 
@@ -33,7 +33,7 @@ services:
       context: user-service/.
       dockerfile: Dockerfile
     ports:
-      - "9000:5000"
+      - "8108:5000"
     networks:
       - app_net
       - user_net
@@ -45,7 +45,7 @@ services:
       context: parameters-service/.
       dockerfile: Dockerfile
     ports:
-      - "9000:5000"
+      - "8109:5000"
     networks:
       - app_net
       - parameter_net
@@ -57,10 +57,9 @@ services:
       context: ontology-service/.
       dockerfile: Dockerfile
     ports:
-      - "9000:5000"
+      - "8110:5000"
     networks:
       - app_net
-      - ontology_net
     depends_on:
       - parameter_database
 
@@ -71,16 +70,7 @@ services:
       POSTGRES_USER: USER_USER_DB
       POSTGRES_PASSWORD: USER_PASSWORD_ULTA_SECRETO
     networks:
-      - user_net
-
-  ontology_database:
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: USER_DB
-      POSTGRES_USER: USER_USER_DB
-      POSTGRES_PASSWORD: USER_PASSWORD_ULTA_SECRETO
-    networks:
-      - user_net
+      - parameter_net
 
   user_database:
     image: postgres:latest
@@ -94,12 +84,7 @@ services:
 networks:
   app_net:
     driver: bridge
-
   user_net:
     driver: bridge
-
-  ontology_net:
-    driver: bridge
-
   parameter_net:
     driver: bridge
