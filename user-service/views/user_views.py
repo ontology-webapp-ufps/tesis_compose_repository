@@ -102,9 +102,4 @@ class ViewUpdate(Resource):
             return {"api_code": "2", "mensaje": "El request no tiene la estructura correcta."}
 
             {
-    "postId": "{{OFFER_POSTID}}",
-    "description": "{{OFFER_DESCRIPTION}}",
-    "size": "{{OFFER_SIZE}}",
-    "fragile": {{OFFER_FRAGILE}},
-    "offer": {{OFFER_OFFER}}
 }
