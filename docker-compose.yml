@@ -26,27 +26,49 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
+  host-page-microfronted:
+    build:
+      context: host-page/.
+      dockerfile: Dockerfile
+    ports:
+      - "8106:4200"
+    networks:
+      - front_net
+
   landing-page-microfronted:
     build:
       context: landing-page/.
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.landing.rule=(PathPrefix(`/`))"
-      - "traefik.http.services.landing.loadbalancer.server.port=80"
+      - "traefik.http.routers.index-page-app.rule=(PathPrefix(`/index`))"
+      - "traefik.http.services.index-page-app.loadbalancer.server.port=4200"
     networks:
-      - app_net
+      - front_net
   
   auth-page-microfronted:
+    container_name: auth-page-container
     build:
       context: auth-page/.
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.auth.rule=(PathPrefix(`/authentication`))"
-      - "traefik.http.services.auth.loadbalancer.server.port=80"
+      - "traefik.http.routers.auth-page-app.rule=(PathPrefix(`/auth`))"
+      - "traefik.http.services.auth-page-app.loadbalancer.server.port=4200"
     networks:
-      - app_net
+      - front_net
+
+  dashboard-page-microfronted:
+    container_name: dashboard-page-container
+    build:
+      context: dashboard-page/.
+      dockerfile: Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard-page-app.rule=(PathPrefix(`/dashboard`))"
+      - "traefik.http.services.dashboard-page-app.loadbalancer.server.port=4200"
+    networks:
+      - front_net
 
   user-microservice:
     build:
@@ -60,9 +82,6 @@ services:
       - "traefik.http.services.users-app.loadbalancer.server.port=5000"
     networks:
       - app_net
-      - user_net
-    depends_on:
-      - user_database
   
   parameter-microservice:
     build:
@@ -76,9 +95,6 @@ services:
       - "traefik.http.services.prarmeters-app.loadbalancer.server.port=5000"
     networks:
       - app_net
-      - parameter_net
-    depends_on:
-      - parameter_database
 
   ontology-microservice:
     build:
@@ -92,31 +108,9 @@ services:
       - "traefik.http.services.prarmeters-app.loadbalancer.server.port=5000"
     networks:
       - app_net
-    depends_on:
-      - parameter_database
-
-  parameter_database:
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: USER_DB
-      POSTGRES_USER: USER_USER_DB
-      POSTGRES_PASSWORD: USER_PASSWORD_ULTA_SECRETO
-    networks:
-      - parameter_net
-
-  user_database:
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: USER_DB
-      POSTGRES_USER: USER_USER_DB
-      POSTGRES_PASSWORD: USER_PASSWORD_ULTA_SECRETO
-    networks:
-      - user_net
 
 networks:
   app_net:
     driver: bridge
-  user_net:
-    driver: bridge
-  parameter_net:
+  front_net:
     driver: bridge
