@@ -2,7 +2,7 @@ version: '3'
 
 services:
   traefik:
-    image: "traefik:v2.6"
+    image: "traefik:latest"
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
@@ -13,32 +13,30 @@ services:
       - "8105:80"
     networks:
       - app_net
+      - front_net
     deploy:
       mode: global
       placement:
         constraints:
           - node.role == manager
       update_config:
-        parallelism: 1
+        parallelism: 2
         delay: 10s
       restart_policy:
         condition: on-failure
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  host-page-microfronted:
-    build:
-      context: host-page/.
-      dockerfile: Dockerfile
-    ports:
-      - "8106:4200"
-    networks:
-      - front_net
-
   landing-page-microfronted:
     build:
       context: landing-page/.
       dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.index-page-app.rule=(PathPrefix(`/index`))"
@@ -47,10 +45,15 @@ services:
       - front_net
   
   auth-page-microfronted:
-    container_name: auth-page-container
     build:
       context: auth-page/.
       dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth-page-app.rule=(PathPrefix(`/auth`))"
@@ -59,10 +62,15 @@ services:
       - front_net
 
   dashboard-page-microfronted:
-    container_name: dashboard-page-container
     build:
       context: dashboard-page/.
       dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard-page-app.rule=(PathPrefix(`/dashboard`))"
@@ -74,6 +82,12 @@ services:
     build:
       context: user-service/.
       dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.users-app.rule=(PathPrefix(`/users`))"
@@ -82,35 +96,71 @@ services:
       - "traefik.http.services.users-app.loadbalancer.server.port=5000"
     networks:
       - app_net
+      - users_net
   
   parameter-microservice:
     build:
       context: parameters-service/.
       dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == manager
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prarmeters-app.rule=(PathPrefix(`/parameters`))"
-      - "traefik.http.routers.prarmeters-app.middlewares=parameters-stripprefix"
+      - "traefik.http.routers.parameters-app.rule=(PathPrefix(`/parameters`))"
+      - "traefik.http.routers.parameters-app.middlewares=parameters-stripprefix"
       - "traefik.http.middlewares.parameters-stripprefix.stripprefix.prefixes=/parameters/"
-      - "traefik.http.services.prarmeters-app.loadbalancer.server.port=5000"
+      - "traefik.http.services.parameters-app.loadbalancer.server.port=5000"
     networks:
       - app_net
+      - parameters_net
 
   ontology-microservice:
     build:
       context: ontology-service/.
       dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ontologies-app.rule=(PathPrefix(`/ontologies`))"
       - "traefik.http.routers.ontologies-app.middlewares=ontologies-stripprefix"
-      - "traefik.http.middlewares.ontologies-stripprefix.stripprefix.prefixes=/ontologies/"
-      - "traefik.http.services.prarmeters-app.loadbalancer.server.port=5000"
+      - "traefik.http.middlewares.ontologies-stripprefix.stripprefix.prefixes=/ontologies/" 
+      - "traefik.http.services.ontologies-app.loadbalancer.server.port=5000"
     networks:
       - app_net
+
+  parameters_database:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: PARAMETER_DB
+      POSTGRES_USER: USER_PARAMETER_DB
+      POSTGRES_PASSWORD: PARAMETER_PASSWORD_ULTA_SECRETO
+    networks:
+      - parameters_net
+  
+  users_database:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: USER_DB
+      POSTGRES_USER: USER_USER_DB
+      POSTGRES_PASSWORD: USER_PASSWORD_ULTA_SECRETO
+    networks:
+      - users_net
 
 networks:
   app_net:
     driver: bridge
   front_net:
+    driver: bridge
+  parameters_net:
+    driver: bridge
+  users_net:
     driver: bridge

@@ -8,7 +8,15 @@ from models.models import db
 from views.user_views import ViewAuth, ViewDelete, ViewLogin, ViewReport, ViewSingIn, ViewUpdate
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dbapp.sqlite'
+db_host = 'users_database'
+db_port = 5432
+db_name = 'USER_DB'
+db_password = 'USER_PASSWORD_ULTA_SECRETO'
+db_user = 'USER_USER_DB'
+
+connection_string = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+app.config['SQLALCHEMY_DATABASE_URI'] = connection_string
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'frase-secreta'
 app.config['PROPAGATE_EXCEPTIONS'] = True
@@ -18,7 +26,6 @@ app_context.push()
 
 db.init_app(app)
 db.create_all()
-
 
 api = Api(app)
 
